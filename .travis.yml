@@ -1,0 +1,9 @@
+language: python
+install:
+  - python setup.py install
+  - pip install codecov
+  - pip install pytest pytest-cov
+script:
+  - pytest --cov=./
+after_script:
+  - codecov
