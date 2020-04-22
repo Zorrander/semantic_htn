@@ -2,6 +2,7 @@ import time
 from cobowl.world import DigitalWorld
 from cmd import Cmd
 from cobowl import world
+import copy
 
 class MyPrompt(Cmd):
     def __init__(self):
@@ -140,13 +141,13 @@ class Planner():
             else:  # Primitive task
                 if self.explore_cond_primitive_task(parent):
                     print("good primitive")
-                    self.planning_world.apply_effects(parent)
+                    self.planning_world.apply_effects(current_task)
                     self.search(final_plan, tasks_to_process)
                     final_plan.insert(0, parent)
                 else:
                     if not self.explore_effects_primitive_task(parent):
                         print("cancel move")
-                        tasks_to_process.append(parent)
+                        tasks_to_process.append(current_task)
                     self.search(final_plan, tasks_to_process)
             return final_plan
 
@@ -156,7 +157,6 @@ class Planner():
             final_plan = list()
             print("create_plan {}".format(current_world))
             self.planning_world = current_world.clone()
-            print("copy created")
             tasks_to_process = self.planning_world.root_task if not root_task else root_task
             final_plan = self.search(final_plan, tasks_to_process)
             print("PLAN: {}".format(final_plan))
@@ -189,6 +189,7 @@ class Planner():
                             self.execute(primitive, world)
                         else:
                             raise DispatchingError(primitive)
+                world.dismiss_command()
         except DispatchingError as e:
             print("Dispatching Error: {} ".format(e.primitive))
             new_plan = self.create_plan(world, [e.primitive])
