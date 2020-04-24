@@ -22,27 +22,18 @@ class Planner():
         print("exploring effects({})".format(current_task))
         return True if self.planning_world.are_effects_satisfied(current_task) else False
 
-    def explore_compound_task(self, current_task, target):
+    def explore_compound_task(self, current_task):
         print("exploring compound task({})".format(current_task))
-        method = self.planning_world.find_satisfied_method(current_task)
-        print("chosen method {}".format(method))
-        print(target)
-        if method:
-            new_tasks = [task for task in self.planning_world.find_subtasks(method)]
-            if target:
-                for task in new_tasks:
-                    task.actsOn = target
-            return new_tasks
+        return self.planning_world.find_satisfied_method(current_task)
 
     def search(self, final_plan, tasks_to_process):
         if not tasks_to_process:
             return final_plan
         else:
             current_task = tasks_to_process.pop(0)
-            target = current_task.actsOn
-            parent, type = self.planning_world.find_type(current_task)
+            type = self.planning_world.find_type(current_task)
             if type == "CompoundTask":
-                new_tasks = self.explore_compound_task(parent, target)
+                new_tasks = self.explore_compound_task(current_task)
                 print("new_tasks {}".format(new_tasks))
                 for t in new_tasks:
                     print(t.actsOn)
@@ -56,13 +47,13 @@ class Planner():
                     tasks_to_process.append(current_task)
                     self.search(final_plan, tasks_to_process)
             else:  # Primitive task
-                if self.explore_cond_primitive_task(parent):
+                if self.explore_cond_primitive_task(current_task):
                     print("good primitive")
                     self.planning_world.apply_effects(current_task)
                     self.search(final_plan, tasks_to_process)
-                    final_plan.insert(0, parent)
+                    final_plan.insert(0, current_task)
                 else:
-                    if not self.explore_effects_primitive_task(parent):
+                    if not self.explore_effects_primitive_task(current_task):
                         print("cancel move")
                         tasks_to_process.append(current_task)
                     self.search(final_plan, tasks_to_process)
@@ -90,11 +81,12 @@ class Planner():
 
     def run(self, world, plan, goal_state = False):
         try:
-            original_plan = copy.deepcopy(plan)
+            print("RUN:")
+            original_plan = copy.copy(plan)
             with world.onto:
                 #while plan and not world.check_state(goal_state):
                 while plan:
-                    primitive = plan.pop(0)()
+                    primitive = plan.pop(0)
                     if primitive.is_a[0].name == "State":
                         pass
                         #goal_state = primitive
@@ -113,8 +105,6 @@ class Planner():
     def execute(self, primitive, world):
         try:
             world.apply_effects(primitive)
-            print("RUN:{}".format(primitive))
             time.sleep(1)
-            #self.sem_controller.interpret(primitive)
         except:
             raise DispatchingError(primitive)
