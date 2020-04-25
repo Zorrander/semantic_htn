@@ -27,9 +27,7 @@ class Planner():
         return self.planning_world.find_satisfied_method(current_task)
 
     def search(self, final_plan, tasks_to_process):
-        if not tasks_to_process:
-            return final_plan
-        else:
+        if tasks_to_process:
             current_task = tasks_to_process.pop(0)
             type = self.planning_world.find_type(current_task)
             if type == "CompoundTask":
@@ -54,10 +52,9 @@ class Planner():
                     final_plan.insert(0, current_task)
                 else:
                     if not self.explore_effects_primitive_task(current_task):
-                        print("cancel move")
                         tasks_to_process.append(current_task)
                     self.search(final_plan, tasks_to_process)
-            return final_plan
+        return final_plan
 
 
     def create_plan(self, current_world, root_task=None):
