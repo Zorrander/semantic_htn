@@ -37,6 +37,7 @@ class Planner():
                 if len(new_tasks) == 1 and new_tasks[0].is_a[0].name == "State":
                     final_plan.insert(0, new_tasks[0])
                 elif new_tasks:
+                    print("Found compound task and new tasks are {}".format(new_tasks))
                     tasks_to_process.extend(new_tasks)
                     self.search(final_plan, tasks_to_process, planning_world)
                     #del tasks_to_process[:-len(new_tasks)]
@@ -49,8 +50,9 @@ class Planner():
                     self.search(final_plan, tasks_to_process, planning_world)
                     final_plan.insert(0, current_task)
                 else:
-                    if not self.explore_effects_primitive_task(current_task, planning_world):
-                        tasks_to_process.append(current_task)
+                    #if not self.explore_effects_primitive_task(current_task, planning_world):
+                    #    tasks_to_process.append(current_task)
+                    tasks_to_process.append(current_task)
                     self.search(final_plan, tasks_to_process, planning_world)
         return final_plan
 
