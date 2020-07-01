@@ -10,52 +10,58 @@ class DispatchingError(Exception):
       self.primitive = primitive
 
 class Planner():
+    def __init__(self, world):
+        self.world = world
 
-    def __init__(self):
-        pass
+    def explore_cond_primitive_task(self, current_task, planning_world):
+        if planning_world.are_preconditions_met(current_task):
+            print("{} - conditions satisfied".format(current_task))
+            return True
+        else:
+            print("{} - conditions unsatisfied".format(current_task))
+            return False
 
-    def explore_cond_primitive_task(self, current_task):
-        return True if self.planning_world.are_preconditions_met(current_task) else False
+    def explore_effects_primitive_task(self, current_task, planning_world):
+        return True if planning_world.are_effects_satisfied(current_task) else False
 
-    def explore_effects_primitive_task(self, current_task):
-        return True if self.planning_world.are_effects_satisfied(current_task) else False
+    def explore_compound_task(self, current_task, planning_world):
+        return planning_world.find_satisfied_method(current_task)
 
-    def explore_compound_task(self, current_task):
-        return self.planning_world.find_satisfied_method(current_task)
-
-    def search(self, final_plan, tasks_to_process):
+    def search(self, final_plan, tasks_to_process, planning_world):
+        print("Tasks to process: {}".format(tasks_to_process))
         if tasks_to_process:
             current_task = tasks_to_process.pop(0)
-            type = self.planning_world.find_type(current_task)
+            type = planning_world.find_type(current_task)
             if type == "CompoundTask":
-                new_tasks = self.explore_compound_task(current_task)
+                new_tasks = self.explore_compound_task(current_task, planning_world)
                 if len(new_tasks) == 1 and new_tasks[0].is_a[0].name == "State":
                     final_plan.insert(0, new_tasks[0])
                 elif new_tasks:
                     tasks_to_process.extend(new_tasks)
-                    self.search(final_plan, tasks_to_process)
+                    self.search(final_plan, tasks_to_process, planning_world)
                     #del tasks_to_process[:-len(new_tasks)]
                 else:
                     tasks_to_process.append(current_task)
-                    self.search(final_plan, tasks_to_process)
+                    self.search(final_plan, tasks_to_process, planning_world)
             else:  # Primitive task
-                if self.explore_cond_primitive_task(current_task):
-                    self.planning_world.apply_effects(current_task)
-                    self.search(final_plan, tasks_to_process)
+                if self.explore_cond_primitive_task(current_task, planning_world):
+                    planning_world.apply_effects(current_task)
+                    self.search(final_plan, tasks_to_process, planning_world)
                     final_plan.insert(0, current_task)
                 else:
-                    if not self.explore_effects_primitive_task(current_task):
+                    if not self.explore_effects_primitive_task(current_task, planning_world):
                         tasks_to_process.append(current_task)
-                    self.search(final_plan, tasks_to_process)
+                    self.search(final_plan, tasks_to_process, planning_world)
         return final_plan
 
 
-    def create_plan(self, current_world, root_task=None):
+    def create_plan(self, command=None, root_task=None):
         try:
             final_plan = list()
-            self.planning_world = current_world.clone()
-            tasks_to_process = self.planning_world.root_task if not root_task else root_task
-            final_plan = self.search(final_plan, tasks_to_process)
+            planning_world = self.world.clone()
+            planning_world.send_command(command[0], command[1])
+            tasks_to_process = planning_world.root_task if not root_task else root_task
+            final_plan = self.search(final_plan, tasks_to_process, planning_world)
             print("PLAN: {}".format(final_plan))
             return final_plan
         except Exception as e:

@@ -11,27 +11,56 @@ RESOURCE_PATH  = os.path.join(home, "ros2", "src", "tuni-semweb", "cobot_knowled
 class TestPrimitiveTasks(unittest.TestCase):
     def setUp(self):
         self.world = world.DigitalWorld(base=os.path.join(RESOURCE_PATH, 'handover.owl'))
-        self.planner = planner.Planner()
-
-    def test_explore_cond(self):
-        current_task = self.world.ReachTask()
-        #self.planner.explore_effects_primitive_task(current_task)
-
-    def test_explore_cond(self):
-        current_task = self.world.onto.ReachTask()
-        #self.planner.explore_cond_primitive_task(current_task)
-
-    def test_grasp(self):
-        self.world.send_command("grasp", [])
-        self.planner.create_plan(self.world)
+        self.world.add_object("peg")
+        self.planner = planner.Planner(self.world)
 
     def test_reach(self):
-        self.world.send_command("reach", [])
-        self.planner.create_plan(self.world)
+        print("===TEST REACH ===        ")
+        plan = self.planner.create_plan(command = ("reach", ["peg"]))
+        self.assertEqual(plan[0].name, "reachtask1")
+        print()
 
-    def test_wait_for(self):
-        self.world.send_command("wait", [])
-        self.planner.create_plan(self.world)
+    def test_grasp(self):
+        print("===TEST GRASP===        ")
+        plan = self.planner.create_plan(command = ("reach", ["peg"]))
+        self.planner.run(self.world, plan)
+        plan = self.planner.create_plan(command = ("grasp", ["peg"]))
+        self.assertEqual(plan[0].name, "grasptask1")
+        print()
+
+    def test_lift(self):
+        print("===TEST LIFT===        ")
+        plan = self.planner.create_plan(command = ("reach", ["peg"]))
+        self.planner.run(self.world, plan)
+        plan = self.planner.create_plan(command = ("grasp", ["peg"]))
+        self.planner.run(self.world, plan)
+        plan = self.planner.create_plan(command = ("lift", ["peg"]))
+        self.assertEqual(plan[0].name, "liftingtask1")
+        print()
+
+    def test_drop(self):
+        print("===TEST DROP===        ")
+        plan = self.planner.create_plan(command = ("reach", ["peg"]))
+        self.planner.run(self.world, plan)
+        plan = self.planner.create_plan(command = ("grasp", ["peg"]))
+        self.planner.run(self.world, plan)
+        plan = self.planner.create_plan(command = ("lift", ["peg"]))
+        self.planner.run(self.world, plan)
+        plan = self.planner.create_plan(command = ("drop", ["peg"]))
+        self.assertEqual(plan[0].name, "dropingtask1")
+        print()
+
+    def test_stop(self):
+        print("===TEST STOP===        ")
+        plan = self.planner.create_plan( command = ("stop", []))
+        self.assertEqual(plan[0].name, "stoptask1")
+        print()
+
+    def test_reset(self):
+        print("===TEST RESET===        ")
+        plan = self.planner.create_plan( command = ("reset", []))
+        self.assertEqual(plan[0].name, "resettask1")
+        print()
 
 if __name__ == '__main__':
     unittest.main()
