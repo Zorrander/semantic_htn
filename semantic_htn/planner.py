@@ -50,9 +50,9 @@ class Planner():
                     self.search(final_plan, tasks_to_process, planning_world)
                     final_plan.insert(0, current_task)
                 else:
-                    #if not self.explore_effects_primitive_task(current_task, planning_world):
-                    #    tasks_to_process.append(current_task)
-                    tasks_to_process.append(current_task)
+                    if not self.explore_effects_primitive_task(current_task, planning_world):
+                        tasks_to_process.append(current_task)
+                    #tasks_to_process.append(current_task)
                     self.search(final_plan, tasks_to_process, planning_world)
         return final_plan
 
