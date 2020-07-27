@@ -1,19 +1,12 @@
-FROM python:3.7.1
+FROM python-with-cobowl
 
-# Install prerequisite Ubuntu packages
-#RUN apt-get install -y <REQUIRED UBUNTU PACKAGES> \
-# && apt-get clean \
-# && rm -rf /var/lib/apt/lists/*
+ADD /semantic_htn /semantic_htn/semantic_htn
+ADD /tests /semantic_htn/tests
+ADD setup.py /semantic_htn
 
-WORKDIR /app
+WORKDIR /semantic_htn
 
-RUN pip3 install -r ../cobowl/
-
-# Copy the application into the image
-ADD . /app
-
-# Run the app setup script
-# RUN /app/setup.sh
+RUN python -m pip install .
 
 # Specify the application startup script
-CMD ["pytest", "./tests/compound_task_test.py"]
+CMD python -m unittest tests/compound_task_test.py

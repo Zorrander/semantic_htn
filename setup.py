@@ -7,7 +7,7 @@ setup(
     version='0.0.1',
     packages = [package_name],
     install_requires=[
-        'setuptools',
+        'setuptools'
     ],
     zip_safe=True,
     maintainer='alex',

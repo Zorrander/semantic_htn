@@ -60,12 +60,16 @@ class Planner():
     def create_plan(self, command=None, root_task=None):
         try:
             final_plan = list()
+            if command:
+                self.world.send_command(command[0], command[1])  # generate a goal
+            goal = self.world.onto.search_one(type = self.onto.Command)
+            goal = goal.has_goal
             planning_world = self.world.clone()
-            planning_world.send_command(command[0], command[1])
+            print("Primitive has effects: {}".format(primitive.hasEffect))
             tasks_to_process = planning_world.root_task if not root_task else root_task
             final_plan = self.search(final_plan, tasks_to_process, planning_world)
             print("PLAN: {}".format(final_plan))
-            return final_plan
+            return final_plan, goal
         except Exception as e:
             print(e)
 
@@ -80,7 +84,6 @@ class Planner():
     def run(self, world, plan, goal_state = False):
         try:
             print("RUN:")
-            original_plan = copy.copy(plan)
             with world.onto:
                 #while plan and not world.check_state(goal_state):
                 while plan:
@@ -92,9 +95,13 @@ class Planner():
                     else:
                         if world.are_preconditions_met(primitive):
                             self.execute(primitive, world)
+                            print("Primitive has effects: {}".format(primitive.hasEffect))
+                            if "CommandSuccessful" in primitive.hasEffect:
+                                cmd = self.onto.search_one(type = self.onto.Command)
+                                if cmd:
+                                    destroy_entity(cmd)
                         else:
                             raise DispatchingError(primitive)
-                world.dismiss_command()
         except DispatchingError as e:
             print("Dispatching Error: {} ".format(e.primitive))
             new_plan = self.create_plan(world, [e.primitive])
