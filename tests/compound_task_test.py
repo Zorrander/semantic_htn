@@ -6,12 +6,12 @@ from os.path import expanduser
 
 home = expanduser("~")
 
-#RESOURCE_PATH  = os.path.join(home, "ros2", "src", "tuni-semweb", "cobot_knowledge", "resource", "database")
-RESOURCE_PATH  = os.path.join(home, "Downloads", "tuni-semweb", "cobot_knowledge", "resource", "database")
+RESOURCE_PATH  = os.path.join(home, "ros2", "src", "tuni-semweb", "cobot_knowledge", "resource", "database")
+# RESOURCE_PATH  = os.path.join(home, "Downloads", "tuni-semweb", "cobot_knowledge", "resource", "database")
 
 class TestPrimitiveTasks(unittest.TestCase):
     def setUp(self):
-        self.world = world.DigitalWorld(base=os.path.join('/home/anglerau/Downloads/tuni-semweb/cobot_knowledge/resource/database/handover.owl'))
+        self.world = world.DigitalWorld(base=os.path.join(RESOURCE_PATH, 'handover.owl'))
         self.world.add_object("peg")
         self.planner = planner.Planner(self.world)
 
@@ -54,7 +54,7 @@ class TestPrimitiveTasks(unittest.TestCase):
         #self.assertEqual(plan[0].name, "reachtask1")
         print()
 
-
+    '''
     def test_handover_robot_to_human(self):
         print("===TEST HANDOVER FROM ROBOT TO HUMAN ===        ")
         plan, goal = self.planner.create_plan(command = ("give", ["peg"]))
@@ -72,7 +72,7 @@ class TestPrimitiveTasks(unittest.TestCase):
         #self.assertEqual(plan[0].name, "reachtask1")
         print()
 
-    '''
+
     def format_data_for_display(people):
         ...  # Implement this!
 
